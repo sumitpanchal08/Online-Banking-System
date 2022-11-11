@@ -1,4 +1,4 @@
-package com.bank.usecases;
+package com.bank.usecases.Accountant;
 import java.util.*;
 
 import com.bank.Exceptions.AccountantException;
