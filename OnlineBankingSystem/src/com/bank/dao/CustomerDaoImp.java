@@ -8,7 +8,9 @@ import java.util.List;
 
 import com.bank.Exceptions.AccountException;
 import com.bank.Exceptions.CustomerException;
+import com.bank.Exceptions.TransactionException;
 import com.bank.model.Customer;
+import com.bank.model.Transaction;
 import com.bank.utility.DBUtil;
 
 public class CustomerDaoImp implements CustomerDao {
@@ -58,6 +60,9 @@ public class CustomerDaoImp implements CustomerDao {
 	public String sendMoneyToAccount(String uname,int ac_no_from, int ac_no_to, int amount,String note)
 			throws CustomerException, AccountException {
 		// TODO Auto-generated method stub
+		if(amount<=0) {
+			throw new CustomerException("Cannot Send less than 1Rs");
+		}
 		String result="Money not Send";
 		try(Connection con=DBUtil.provideConnection()){
 			PreparedStatement ps=con.prepareStatement("select account_number from account a join customer c on a.customer_username=c.username where username=? and account_number=?");
@@ -85,10 +90,15 @@ public class CustomerDaoImp implements CustomerDao {
 						ps2.setInt(2, ac_no_from);
 						int x=ps4.executeUpdate();
 						if(x>0) {
-							int y=ps2.executeUpdate();
+							int y=ps3.executeUpdate();
 							if(y>0) {
-								int z=ps3.executeUpdate();
+								int z=ps2.executeUpdate();
 								result="Payment Done!!";
+							}else {
+								PreparedStatement ps5=con.prepareStatement("delete from transaction where transaction_id=?");
+								ps5.setInt(1, id);
+								ps5.executeUpdate();
+								throw new AccountException("Recipent Account number is not Correct");
 							}
 						}
 					}else {
@@ -113,25 +123,62 @@ public class CustomerDaoImp implements CustomerDao {
 			while(rs1.next()) {
 				alist.add(rs1.getInt(1));
 			}
-			result=giveRandomNumber(1000000000,alist);
+			result=giveRandomNumber(1000000000,100000000,alist);
 		}catch(Exception e) {
 			throw new AccountException(e.getMessage());
 		}
 		return result;
 	}
-	public int giveRandomNumber(int n,List<Integer> list) {
-		int result=(int)(Math.random()*n);
+	public int giveRandomNumber(int m,int n,List<Integer> list) {
+		int result=(int)(Math.random()*(m-n+1)+n);
 		for(int i=0;i<list.size();i++) {
 			if(list.get(i)==result) {
-				return giveRandomNumber(n,list);
+				return giveRandomNumber(m,n,list);
 			}
 		}
 		return result;
 	}
 
 	@Override
-	public String getTransaction(int account_number) throws CustomerException {
+	public List<Transaction> getTransaction(int account_number) throws CustomerException,TransactionException {
 		// TODO Auto-generated method stub
-		return null;
+		List<Transaction> list=new ArrayList<>();
+		try(Connection con=DBUtil.provideConnection()){
+			PreparedStatement ps=con.prepareStatement("select * from transaction where from_=? OR to_=? order by transaction_datetime");
+			ps.setInt(1, account_number);
+			ps.setInt(2, account_number);
+			ResultSet rs=ps.executeQuery();
+			int count=0;
+			while(rs.next()) {
+				Transaction t=new Transaction(rs.getInt(1),rs.getString(5),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getString(6));
+				list.add(t);
+				count++;
+			}
+			if(count==0) {
+				throw new TransactionException("Invalid Account Number or No transaction done!!");
+			}
+		}catch(Exception e) {
+			throw new CustomerException(e.getMessage());
+		}
+		return list;
+	}
+
+	@Override
+	public String getAccountBalance(int ac) throws AccountException {
+		// TODO Auto-generated method stub
+		String result=null;
+		try(Connection con=DBUtil.provideConnection()){
+			PreparedStatement ps=con.prepareStatement("select balance from account where account_number=?");
+			ps.setInt(1, ac);
+			ResultSet rs=ps.executeQuery();
+			if(rs.next()) {
+				result="Your Account balance is $"+rs.getInt(1);
+			}else {
+				throw new AccountException("Invalid Account Number");
+			}
+		}catch(Exception e) {
+			throw new AccountException(e.getMessage());
+		}
+		return result;
 	}
 }

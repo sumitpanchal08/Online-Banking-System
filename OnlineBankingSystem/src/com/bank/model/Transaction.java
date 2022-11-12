@@ -18,4 +18,7 @@ public class Transaction {
 		this.note=note;
 		this.dateTime=dateTime;
 	}
+	public String toString() {
+		return "id: "+this.id+" From_account: "+this.from_+" To_account: "+this.to_+" Amount: "+this.amount+" Note: ("+this.note+") datetime: "+this.dateTime;
+	}
 }
