@@ -23,4 +23,25 @@ public class Loan {
 	public String toString() {
 		return "Loan_id: "+this.loan_id+" Account: "+this.account_number+" Amount: "+this.amount+" PayableAmount: "+this.amount_to_pay+" issue_datetime: "+this.issue_datetime+" Note: "+this.note;
 	}
+	public String getNote() {
+		return this.note;
+	}
+	public String getIssueDateTime() {
+		return this.issue_datetime;
+	}
+	public int getTotalPayableAmount() {
+		return this.amount_to_pay;
+	}
+	public int getInterest() {
+		return this.interest;
+	}
+	public int getLoanId() {
+		return this.loan_id;
+	}
+	public int getAmount() {
+		return this.amount;
+	}
+	public int getAccountNumber() {
+		return this.account_number;
+	}
 }

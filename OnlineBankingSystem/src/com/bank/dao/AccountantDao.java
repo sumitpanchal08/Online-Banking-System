@@ -6,9 +6,11 @@ import com.bank.Exceptions.AccountException;
 import com.bank.Exceptions.AccountantException;
 import com.bank.Exceptions.CustomerException;
 import com.bank.Exceptions.LoanException;
+import com.bank.Exceptions.TransactionException;
 import com.bank.model.Account;
 import com.bank.model.Accountant;
 import com.bank.model.Loan;
+import com.bank.model.Transaction;
 
 public interface AccountantDao {
 	public String registerAccountant(Accountant a) throws AccountantException;
@@ -21,4 +23,5 @@ public interface AccountantDao {
 	public Loan getLoanInfo(int loan_id) throws LoanException;
 	public List<Loan> getLoansByAccount(int acc_no) throws LoanException;
 	public String payLoan(int loan_id) throws LoanException;
+	public List<Transaction> getTransaction(int account_number) throws CustomerException,TransactionException;
 }

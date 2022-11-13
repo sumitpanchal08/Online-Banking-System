@@ -10,9 +10,11 @@ import com.bank.Exceptions.AccountException;
 import com.bank.Exceptions.AccountantException;
 import com.bank.Exceptions.CustomerException;
 import com.bank.Exceptions.LoanException;
+import com.bank.Exceptions.TransactionException;
 import com.bank.model.Account;
 import com.bank.model.Accountant;
 import com.bank.model.Loan;
+import com.bank.model.Transaction;
 import com.bank.utility.DBUtil;
 
 public class AccountantDaoImp implements AccountantDao {
@@ -280,7 +282,7 @@ public class AccountantDaoImp implements AccountantDao {
 				count++;
 			}
 			if(count==0){
-				throw new LoanException("Invalid Loan id!!");
+				throw new LoanException("No Loan on this Account Number!!");
 			}
 			
 		}catch(Exception e) {
@@ -342,6 +344,30 @@ public class AccountantDaoImp implements AccountantDao {
 			throw new LoanException(e.getMessage());
 		}
 		return result;
+	}
+
+	@Override
+	public List<Transaction> getTransaction(int account_number) throws CustomerException, TransactionException {
+		// TODO Auto-generated method stub
+		List<Transaction> list=new ArrayList<>();
+		try(Connection con=DBUtil.provideConnection()){
+			PreparedStatement ps=con.prepareStatement("select * from transaction where from_=? OR to_=? order by transaction_datetime");
+			ps.setInt(1, account_number);
+			ps.setInt(2, account_number);
+			ResultSet rs=ps.executeQuery();
+			int count=0;
+			while(rs.next()) {
+				Transaction t=new Transaction(rs.getInt(1),rs.getString(5),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getString(6));
+				list.add(t);
+				count++;
+			}
+			if(count==0) {
+				throw new TransactionException("Invalid Account Number or No transaction done!!");
+			}
+		}catch(Exception e) {
+			throw new CustomerException(e.getMessage());
+		}
+		return list;
 	}
 
 }

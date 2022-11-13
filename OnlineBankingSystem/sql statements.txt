@@ -1,0 +1,62 @@
+***********
+Accountant table:-
+create table Accountant(name varchar(25) not null,email varchar(50) not null unique,
+username varchar(50) not null unique, password varchar(12) not null, address varchar(40));
+
+insert into Accountant values();
+**************
+Customer table:-
+create table Customer(name varchar(25) not null,email varchar(50) not null unique,
+username varchar(50) not null primary key, password varchar(12) not null, address varchar(40));
+
+insert into Customer values('Ajay','ajay@gmail.com','ajay11','1234','ktl');
+*******
+Account table:-
+create table Account(account_number int not null primary key,
+customer_username varchar(50) not null, balance int default 0,foreign key (customer_username)
+ references customer(username));
+
+insert into Account(account_number,customer_username) values((select floor(100000000*rand())),
+'ajay11');
+************
+Transaction table:-
+create table Transaction(transaction_id int not null primary key,from_ varchar(50) not null,to_
+varchar(50) not null,amount int not null,transaction_datetime datetime default now(),note varchar(50));
+
+insert into Transaction(transaction_id,from_,to_,amount,note) values(?,?,?,?,?);
+
+select * from transaction where from_=? OR to_=? order by transaction_datetime;
+**********
+To find Accounts of All:-
+select account_number,balance,name,username,email from 
+account a join customer c on a.customer_username=c.username group by account_number;
+***************
+To Send money from one account to another:-
+step1= Check from username and account matches...
+       select balance from account a join customer c on a.customer_username=c.username
+ where username=? and password=? and account_number=?;
+
+***************
+Loan table:
+create table loan(loan_id int not null primary key,account_number int,amount int,issue_datetime
+ datetime default now(),interest int not null,note varchar(50),amount_to_pay int,foreign key (account_number)
+ references account(account_number));
+
+insert into loan(loan_id,account_number,amount,interest,note,amount_to_pay) values(?,?,?,?,?);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -26,4 +26,16 @@ public class Account {
 	public int getAccountNumber() {
 		return this.account_number;
 	}
+	public String getAccountHolderName() {
+		return this.account_holder_name;
+	}
+	public String getAccountHolderUsername() {
+		return this.username;
+	}
+	public void setAccountNumber(int ac) {
+		this.account_number=ac;
+	}
+	public void setBalance(int bal) {
+		this.balance=bal;	
+	}
 }

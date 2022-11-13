@@ -9,6 +9,7 @@ import java.util.List;
 import com.bank.Exceptions.AccountException;
 import com.bank.Exceptions.CustomerException;
 import com.bank.Exceptions.TransactionException;
+import com.bank.model.Account;
 import com.bank.model.Customer;
 import com.bank.model.Transaction;
 import com.bank.utility.DBUtil;
@@ -140,23 +141,41 @@ public class CustomerDaoImp implements CustomerDao {
 	}
 
 	@Override
-	public List<Transaction> getTransaction(int account_number) throws CustomerException,TransactionException {
+	public List<Transaction> getTransaction(String uname,int account_number) throws CustomerException,TransactionException {
 		// TODO Auto-generated method stub
 		List<Transaction> list=new ArrayList<>();
 		try(Connection con=DBUtil.provideConnection()){
-			PreparedStatement ps=con.prepareStatement("select * from transaction where from_=? OR to_=? order by transaction_datetime");
+			PreparedStatement ps=con.prepareStatement("select customer_username from account where account_number=?");
 			ps.setInt(1, account_number);
-			ps.setInt(2, account_number);
 			ResultSet rs=ps.executeQuery();
-			int count=0;
-			while(rs.next()) {
-				Transaction t=new Transaction(rs.getInt(1),rs.getString(5),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getString(6));
-				list.add(t);
-				count++;
+			if(rs.next()) {
+				String un=rs.getString(1);
+				if(un.equals(uname)) {
+					
+				}else {
+					throw new CustomerException("This is Not your Account!!");
+				}
+			}else {
+				throw new CustomerException("Invalid Account Number!!");
 			}
-			if(count==0) {
-				throw new TransactionException("Invalid Account Number or No transaction done!!");
-			}
+		}catch(Exception e) {
+			throw new CustomerException(e.getMessage());
+		}
+		try(Connection con=DBUtil.provideConnection()){
+					PreparedStatement ps=con.prepareStatement("select * from transaction where from_=? OR to_=? order by transaction_datetime");
+					ps.setInt(1, account_number);
+					ps.setInt(2, account_number);
+					ResultSet rs=ps.executeQuery();
+					int count=0;
+					while(rs.next()) {
+						Transaction t=new Transaction(rs.getInt(1),rs.getString(5),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getString(6));
+						list.add(t);
+						count++;
+					}
+					if(count==0) {
+						throw new TransactionException("No transaction done!!");
+					}
+			
 		}catch(Exception e) {
 			throw new CustomerException(e.getMessage());
 		}
@@ -164,21 +183,47 @@ public class CustomerDaoImp implements CustomerDao {
 	}
 
 	@Override
-	public String getAccountBalance(int ac) throws AccountException {
+	public String getAccountBalance(String uname,int ac) throws AccountException {
 		// TODO Auto-generated method stub
 		String result=null;
 		try(Connection con=DBUtil.provideConnection()){
-			PreparedStatement ps=con.prepareStatement("select balance from account where account_number=?");
-			ps.setInt(1, ac);
+			PreparedStatement ps=con.prepareStatement("select balance from account where customer_username=? and account_number=?");
+			ps.setInt(2, ac);
+			ps.setString(1, uname);
 			ResultSet rs=ps.executeQuery();
 			if(rs.next()) {
-				result="Your Account balance is $"+rs.getInt(1);
+				result="Account balance is $"+rs.getInt(1);
 			}else {
-				throw new AccountException("Invalid Account Number");
+				throw new AccountException("Username not match Account Number");
 			}
 		}catch(Exception e) {
 			throw new AccountException(e.getMessage());
 		}
 		return result;
+	}
+
+	@Override
+	public List<Account> getAllAccountDetails(String uname) throws AccountException {
+		// TODO Auto-generated method stub
+		List<Account> list=new ArrayList<>();
+		try(Connection con=DBUtil.provideConnection()){
+			PreparedStatement ps=con.prepareStatement("select * from account where customer_username=?");
+			ps.setString(1, uname);
+			ResultSet rs=ps.executeQuery();
+			int count=0;
+			while(rs.next()) {
+				Account a=new Account();
+				a.setAccountNumber(rs.getInt(1));
+				a.setBalance(rs.getInt(3));
+				list.add(a);
+				count++;
+			}
+			if(count==0){
+				throw new AccountException("No Account Found!!");
+			}
+		}catch(Exception e) {
+			throw new AccountException(e.getMessage());
+		}
+		return list;
 	}
 }
